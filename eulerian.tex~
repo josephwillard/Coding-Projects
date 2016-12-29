@@ -1,0 +1,140 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsfonts, listings, amsthm, mathtools, graphicx, pgfplots, tikz, caption, draftwatermark}%pythontex
+\setlength\parindent{12pt}
+\SetWatermarkText{DRAFT}
+\SetWatermarkScale{1}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem*{state}{Statement}
+\newtheorem{defn}{Definition}[section]
+
+\title{Eulerian Trails and Tours}
+\author{Joseph Willard}
+
+
+\begin{document}
+\maketitle
+
+
+\section{Introduction}
+This post discusses the idea behind Eulerian trails and tours. The first section provides some historical insight into the topics as well as a description of the algorithm and related theorems complete with proof. The second section gives python code that simulates finding trails or tours and an explanation behind the process.
+
+
+\section{Eulerian Trails and Tours}
+% discuss algorithm
+% discuss BFS
+% discuss connected graphs
+
+First we address some necessary definitions,
+\begin{defn}
+Given a graph $G$ the \textbf{degree} of a vertex is the number of edges that touch the vertex. In figure $1$ vertex $E$ on the left graph has a degree of $4$, this is often simplified as $\deg(E) = 4$.
+\end{defn}
+
+\begin{defn}
+  Given a graph $G$, a \textbf{\textit{walk}} is an alternating sequence of vertices and edges $<v_{0},e_{1},v_{1},\cdots ,e_{n},v_{n}>$. A walk is considered \textbf{\textit{closed}} if $v_{0} = v_{n}$.
+\end{defn}
+
+\begin{defn}
+A graph $G$ is \textbf{connected} if there exists a walk from any two vertices in $G$.
+\end{defn}
+
+
+\begin{defn}
+  A walk is called a \textbf{\textit{trail}} if no edges are repeated.
+\end{defn}
+
+\begin{defn}
+A graph $G$ has an \textbf{\textit{Eulerian Trail}} if there exists a walk using every edge (see figure $1$). 
+\end{defn}
+
+\begin{defn}
+A graph $G$ has an \textbf{\textit{Eulerian Tour}} if there exists a \underline{closed} walk using every edge (see figure $1$). 
+\end{defn}
+
+\vspace{6cm}
+
+\begin{figure}
+\begin{center}
+  \begin{tikzpicture}[shorten >=1pt,node distance=3cm,auto]
+      \node[shape=circle,draw=black] (A)  at (0,0) {$A$};
+      \node[shape=circle,draw=black] (B)  at (2,0) {$B$};
+      \node[shape=circle,draw=black] (C)  at (4,-2) {$C$};
+      \node[shape=circle,draw=black] (D)  at (-2,-2) {$D$};
+      \node[shape=circle,draw=black] (E)  at (1,-3) {$E$};
+      \node[shape=circle,draw=black] (F)  at (1,-6) {$F$};
+      \path[->,draw,thick]
+      (F) edge node[below, xshift=-1mm] {$1$} (D)
+      (D) edge node[above] {$2$} (A)
+      (A) edge node[above, xshift=1mm] {$3$} (E)
+      (E) edge node[above] {$4$} (D)
+      (D) edge node[above] {$5$} (B)
+      (B) edge node[above] {$6$} (A)
+      (A) edge node[above] {$7$} (C)
+      (C) edge node[above] {$8$} (B)
+      (B) edge node[above,xshift=-1mm] {$9$} (E)
+      (E) edge node[above] {$10$} (C)
+      (C) edge node[below, xshift=1mm] {$11$} (F);
+    \end{tikzpicture}
+%\caption{Eulerian Tour} \label{fig:Eulerian Tour}
+\qquad
+\begin{tikzpicture}
+      \node[shape=circle,draw=black] (A)  at (0,0) {$A$};
+      \node[shape=circle,draw=black] (B)  at (2,0) {$B$};
+      \node[shape=circle,draw=black] (C)  at (2,-2) {$C$};
+      \node[shape=circle,draw=black] (D)  at (0,-2) {$D$};
+      \path[->,draw,thick]
+      (A) edge node[above] {$1$} (B)
+      (B) edge node[right] {$2$} (C)
+      (C) edge node[above] {$3$} (A)
+      (A) edge node[left] {$4$} (D)
+      (D) edge node[above] {$5$} (C);
+\end{tikzpicture}
+%\caption{Eulerian Trail} \label{fig:Eulerian Trail}
+\end{center}
+\caption{Eulerian Tour (left) and Eulerian Trail (right)} \label{fig:Eulerian Trail}
+\end{figure}
+
+\section{History}
+Historically the idea of of an Eulerian Tour/Trail can be linked back to the Seven Bridges of K{\"o}nigsberg (see figure $2$), which was at the time a city in Prussia but now located in Russia. The question involves finding a way to cross each bridge only once. Euler reformulated the question such that it relied on the number of bridge crossings, labelling the land masses as nodes. This allowed him to make generalize that to use every bridge in a graph there must either exist all even degree vertices or exactly two (see below for proof).
+\begin{figure}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[shape=circle,draw=black] (A)  at (0,0) {$A$};
+      \node[shape=circle,draw=black] (B)  at (0,-2) {$B$};
+      \node[shape=circle,draw=black] (C)  at (0,-4) {$C$};
+      \node[shape=circle,draw=black] (D)  at (4,-2) {$D$};
+      \path[draw, thick]
+      (A) edge (D)
+      (B) edge (D)
+      (C) edge (D)
+      (A) edge[bend right] (B)
+      (B) edge[bend right] (A)
+      (C) edge[bend right] (B)
+      (B) edge[bend right] (C);
+    \end{tikzpicture}
+  \end{center}
+\caption{Bridges of K{\"o}nigsberg, the nodes are islands and the edges are bridges.}
+\end{figure}
+
+\section{Theorems}
+
+\begin{theorem}
+If $G$ is a connected graph with every vertex having even degree, then $G$ has an Eulerian Tour.
+\end{theorem}
+
+\begin{proof}
+  Before addressing this it is important to address the case when a graph $G$ has no edges. In this case then there trivially exists an Eulerian Tour since there exists no edges to use. In the case where $G$ is connected arbitrarily choose a starting vertex $v_{0}$. since it is given that each vertex of $G$ is even the when moving from $v_{0}$ to an adjacent vertex $v_{1}$ both have an odd number of unused edges incident to them respectively. Continue this process and every time an unused edge is chosen the incident vertices will have an even number of unused edges except the $v_{0}$. continue doing this until the starting vertex is reached, which is possible because $G$ is connected and every vertex except $v_{0}$ must have an unused edge to leave with.
+
+  If all edges are used in this process then the resulting path gives an Eulerian Tour. If there still exists unused edges then starting from an incident vertex repeat the same process which is again possible since $G$ is connected and in the from the first iteration of this process we used an even number of edges hence each vertex should still have an even degree.
+\end{proof}
+
+
+
+
+
+
+
+
+\end{document}
